@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация на свадьбу</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 15px; background-color: #fcfcfc; color: #333; }
+        h2 { text-align: center; color: #4A4A4A; margin-bottom: 20px; }
+        .hidden { display: none !important; }
+        .form-group { margin-bottom: 18px; padding: 15px; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
+        input[type="text"], input[type="number"], textarea { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; margin-top: 5px;}
+        textarea { resize: vertical; }
+        .radio-group { margin-bottom: 10px; display: flex; align-items: center; }
+        .radio-group input { margin-right: 10px; transform: scale(1.2); }
+        .checkbox-group { display: flex; align-items: center; margin-top: 5px; }
+        .checkbox-group input { margin-right: 10px; transform: scale(1.2); }
+    </style>
+</head>
+<body>
+    <h2>Ждем вас на нашей свадьбе! 💍</h2>
+    
+    <div class="form-group">
+        <label>Сможете присутствовать?</label>
+        <div class="radio-group">
+            <input type="radio" id="attendYes" name="attendance" value="yes" checked>
+            <label for="attendYes" style="font-weight:normal; margin:0;">Прийду</label>
+        </div>
+        <div class="radio-group">
+            <input type="radio" id="attendNo" name="attendance" value="no">
+            <label for="attendNo" style="font-weight:normal; margin:0;">Буду держать кулачки на расстоянии</label>
+        </div>
+    </div>
+
+    <!-- Блок для тех, кто придет -->
+    <div id="attendeeSection">
+        <div class="form-group">
+            <label>Имя и Фамилия</label>
+            <input type="text" id="fullName" placeholder="Например: Иван Иванов">
+        </div>
+
+        <div class="form-group">
+            <label>Предпочтения в ЕДЕ/Напитках</label>
+            <textarea id="foodPrefs" rows="2" placeholder="Аллергии, вегетарианство, любимый алкоголь..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Будет ли кто-то еще с вами?</label>
+            <div class="checkbox-group">
+                <input type="checkbox" id="withGuests">
+                <label for="withGuests" style="font-weight:normal; margin:0;">Да, со мной будет пара/семья</label>
+            </div>
+            
+            <div id="guestsSection" class="hidden" style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 15px;">
+                <label>Сколько человек с вами (не считая вас)?</label>
+                <input type="number" id="guestsCount" min="1" placeholder="Например: 1">
+                
+                <label style="margin-top: 10px;">Их Имя и Фамилия</label>
+                <textarea id="guestsNames" rows="2" placeholder="Например: Мария Иванова"></textarea>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Напоминания от бота 🔔</label>
+            <div class="checkbox-group">
+                <input type="checkbox" id="remindDate">
+                <label for="remindDate" style="font-weight:normal; margin:0;">Поставить напоминание на дату 12.06.2026</label>
+            </div>
+            <div class="checkbox-group" style="margin-top: 10px;">
+                <input type="checkbox" id="remindDayBefore">
+                <label for="remindDayBefore" style="font-weight:normal; margin:0;">Напомнить о мероприятии за день до начала</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Пожелания (видно всегда) -->
+    <div class="form-group">
+        <label>Ваши пожелания брачующимся!</label>
+        <textarea id="wishes" rows="4" placeholder="Напишите пару теплых слов..."></textarea>
+    </div>
+
+    <script>
+        // Инициализация Telegram Web App
+        let tg = window.Telegram.WebApp;
+        tg.expand(); // Открываем на весь экран
+
+        // Элементы
+        const attendYes = document.getElementById('attendYes');
+        const attendNo = document.getElementById('attendNo');
+        const attendeeSection = document.getElementById('attendeeSection');
+        const withGuests = document.getElementById('withGuests');
+        const guestsSection = document.getElementById('guestsSection');
+
+        // Логика переключения "Приду / Не приду"
+        attendNo.addEventListener('change', () => {
+            if(attendNo.checked) attendeeSection.classList.add('hidden');
+        });
+        attendYes.addEventListener('change', () => {
+            if(attendYes.checked) attendeeSection.classList.remove('hidden');
+        });
+
+        // Логика "Плюс один"
+        withGuests.addEventListener('change', () => {
+            if(withGuests.checked) guestsSection.classList.remove('hidden');
+            else guestsSection.classList.add('hidden');
+        });
+
+        // Настройка главной кнопки Telegram
+        tg.MainButton.text = "ОТПРАВИТЬ АНКЕТУ";
+        tg.MainButton.color = "#E0A96D"; // Красивый золотистый цвет
+        tg.MainButton.show();
+
+        // Сбор данных при нажатии кнопки
+        tg.onEvent('mainButtonClicked', function(){
+            const data = {
+                attendance: attendYes.checked ? "Прийду" : "Держу кулачки на расстоянии",
+                wishes: document.getElementById('wishes').value || "Нет пожеланий"
+            };
+
+            if (attendYes.checked) {
+                data.fullName = document.getElementById('fullName').value || "Не указано";
+                data.foodPrefs = document.getElementById('foodPrefs').value || "Нет предпочтений";
+                data.hasGuests = withGuests.checked;
+                if(withGuests.checked) {
+                    data.guestsCount = document.getElementById('guestsCount').value || "0";
+                    data.guestsNames = document.getElementById('guestsNames').value || "Не указаны";
+                }
+                data.remindDate = document.getElementById('remindDate').checked;
+                data.remindDayBefore = document.getElementById('remindDayBefore').checked;
+            }
+
+            // Отправляем JSON-строку боту
+            tg.sendData(JSON.stringify(data));
+        });
+    </script>
+</body>
+</html>
