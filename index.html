@@ -64,10 +64,6 @@
 
         <div class="form-group">
             <label>Напоминания от бота 🔔</label>
-            <div class="checkbox-group">
-                <input type="checkbox" id="remindDate">
-                <label for="remindDate" style="font-weight:normal; margin:0;">Поставить напоминание на дату 12.06.2026</label>
-            </div>
             <div class="checkbox-group" style="margin-top: 10px;">
                 <input type="checkbox" id="remindDayBefore">
                 <label for="remindDayBefore" style="font-weight:normal; margin:0;">Напомнить о мероприятии за день до начала</label>
@@ -127,7 +123,6 @@
                     data.guestsCount = document.getElementById('guestsCount').value || "0";
                     data.guestsNames = document.getElementById('guestsNames').value || "Не указаны";
                 }
-                data.remindDate = document.getElementById('remindDate').checked;
                 data.remindDayBefore = document.getElementById('remindDayBefore').checked;
             }
 
